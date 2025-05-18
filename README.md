@@ -43,3 +43,4 @@ Tout cela **depuis votre ordinateur**, **sans connexion Internet**, et **sans en
 > Ce projet est libre et open source.  
 > Pour toute question ou suggestion : [ouvrir une issue](https://github.com/Unbanked0/filigrane/issues)
 
+**Licence libre, sans aucune garantie : GNU General Public License v3.0**
