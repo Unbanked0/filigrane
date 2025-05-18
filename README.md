@@ -20,6 +20,9 @@ Tout cela **depuis votre ordinateur**, **sans connexion Internet**, et **sans en
 
 > Ensuite : double-cliquez sur ce fichier web téléchargé pour l’ouvrir dans votre navigateur (comme une page web classique !).
 
+## Démo 
+![Demo_filigrane](https://github.com/user-attachments/assets/6398f87a-d3a2-493f-8d0d-47afd6a7c351)
+
 ---
 
 ## 🛠️ Comment l’utiliser ?
