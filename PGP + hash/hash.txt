@@ -1,0 +1,4 @@
+filigrane_pdf_official_V1.3.html
+
+SHA256 hash :
+8cc46be2e184c9cc58271cc40e71bd98ba0dde09b5105363ed69fdf5c0a2ab6e

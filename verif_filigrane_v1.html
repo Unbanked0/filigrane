@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Vérificateur PDF Filigrané</title>
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSIjMjE5NkYzIi8+CiAgPHRleHQgeD0iMTYiIHk9IjIyIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtd2VpZ2h0PSJib2xkIiBmaWxsPSJ3aGl0ZSIgdGV4dC1hbmNob3I9Im1pZGRsZSI+VjwvdGV4dD4KPC9zdmc+Cg==">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #2196F3, #1976D2);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+
+        .main-content {
+            padding: 30px;
+        }
+
+        .upload-zone {
+            border: 3px dashed #ddd;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .upload-zone:hover {
+            border-color: #2196F3;
+            background: #f0f8ff;
+        }
+
+        .upload-zone.dragover {
+            border-color: #2196F3;
+            background: #e3f2fd;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 18px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .upload-subtext {
+            font-size: 14px;
+            color: #999;
+        }
+
+        #fileInput {
+            display: none;
+        }
+
+        .result-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .result-card {
+            border-radius: 10px;
+            padding: 25px;
+            margin-bottom: 20px;
+            border-left: 5px solid;
+        }
+
+        .result-authentic {
+            background: #e8f5e9;
+            border-color: #4caf50;
+            color: #2e7d32;
+        }
+
+        .result-suspicious {
+            background: #fff3e0;
+            border-color: #ff9800;
+            color: #ef6c00;
+        }
+
+        .result-invalid {
+            background: #ffebee;
+            border-color: #f44336;
+            color: #c62828;
+        }
+
+        .result-icon {
+            font-size: 24px;
+            margin-right: 10px;
+        }
+
+        .result-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .details {
+            margin-top: 15px;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 5px;
+            font-size: 14px;
+        }
+
+        .details-item {
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .details-label {
+            font-weight: 600;
+        }
+
+        .details-value {
+            font-family: monospace;
+            background: rgba(0,0,0,0.1);
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+
+        .reset-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 15px;
+            transition: background 0.3s ease;
+        }
+
+        .reset-btn:hover {
+            background: #1976D2;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .spinner {
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #2196F3;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .info-section {
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+
+        .info-title {
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 Vérificateur PDF Filigrané</h1>
+            <p>Vérifiez l'authenticité des PDF traités avec l'outil Filigrane v1</p>
+			<p>Seule source intègre : <a href="https://github.com/Unbanked0/filigrane">github.com/Unbanked0/filigrane</a></p>
+        </div>
+
+        <div class="main-content">
+            <div class="upload-zone" id="uploadZone">
+                <div class="upload-icon">📄</div>
+                <div class="upload-text">Cliquez ici ou glissez-déposez votre PDF</div>
+                <div class="upload-subtext">Seuls les fichiers PDF sont acceptés</div>
+                <input type="file" id="fileInput" accept=".pdf">
+            </div>
+
+            <div class="loading" id="loadingDiv">
+                <div class="spinner"></div>
+                <p>Analyse du PDF en cours...</p>
+            </div>
+
+            <div class="result-section" id="resultSection">
+                <div class="result-card" id="resultCard">
+                    <div class="result-title" id="resultTitle">
+                        <span class="result-icon" id="resultIcon"></span>
+                        <span id="resultText"></span>
+                    </div>
+                    <p id="resultDescription"></p>
+                    
+                    <div class="details" id="detailsSection">
+                        <div class="details-item">
+                            <span class="details-label">Créateur :</span>
+                            <span class="details-value" id="creatorValue">-</span>
+                        </div>
+                        <div class="details-item">
+                            <span class="details-label">Date de création :</span>
+                            <span class="details-value" id="creationDateValue">-</span>
+                        </div>
+                        <div class="details-item">
+                            <span class="details-label">ID Session :</span>
+                            <span class="details-value" id="sessionIdValue">-</span>
+                        </div>
+                        <div class="details-item">
+                            <span class="details-label">Marqueurs trouvés :</span>
+                            <span class="details-value" id="markersValue">-</span>
+                        </div>
+                        <div class="details-item">
+                            <span class="details-label">Footer officiel :</span>
+                            <span class="details-value" id="footerValue">-</span>
+                        </div>
+                    </div>
+
+                    <button class="reset-btn" onclick="resetVerifier()">Vérifier un autre PDF</button>
+                </div>
+            </div>
+
+            <div class="info-section">
+                <div class="info-title">ℹ️ À propos de cette vérification</div>
+                <p>Ce vérificateur analyse les marqueurs de sécurité et métadonnées ajoutés automatiquement par l'outil Filigrane v1. Il détecte les modifications suspectes mais ne peut pas garantir l'intégrité absolue du contenu original.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Configuration PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+        const uploadZone = document.getElementById('uploadZone');
+        const fileInput = document.getElementById('fileInput');
+        const loadingDiv = document.getElementById('loadingDiv');
+        const resultSection = document.getElementById('resultSection');
+
+        // Gestion upload
+        uploadZone.addEventListener('click', () => fileInput.click());
+
+        uploadZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadZone.classList.add('dragover');
+        });
+
+        uploadZone.addEventListener('dragleave', () => {
+            uploadZone.classList.remove('dragover');
+        });
+
+        uploadZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadZone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                verifyPDF(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                verifyPDF(e.target.files[0]);
+            }
+        });
+
+        async function verifyPDF(file) {
+            // Afficher le loading
+            uploadZone.style.display = 'none';
+            loadingDiv.style.display = 'block';
+            resultSection.style.display = 'none';
+
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+                const url = URL.createObjectURL(blob);
+
+                // Charger avec PDF.js pour l'analyse de contenu
+                const pdf = await pdfjsLib.getDocument(url).promise;
+                
+                // Analyser les métadonnées et le contenu
+                const verificationResult = await analyzePDF(pdf, arrayBuffer);
+                
+                // Afficher les résultats
+                displayResults(verificationResult);
+                
+                URL.revokeObjectURL(url);
+
+            } catch (error) {
+                console.error('Erreur lors de l\'analyse:', error);
+                displayResults({
+                    status: 'error',
+                    title: 'Erreur d\'analyse',
+                    description: 'Impossible d\'analyser ce fichier PDF.',
+                    details: {}
+                });
+            }
+
+            loadingDiv.style.display = 'none';
+            resultSection.style.display = 'block';
+        }
+
+        async function analyzePDF(pdf, arrayBuffer) {
+            const result = {
+                status: 'invalid',
+                title: '',
+                description: '',
+                details: {
+                    creator: 'Non trouvé',
+                    creationDate: 'Non trouvée',
+                    sessionId: 'Non trouvé',
+                    markers: 0,
+                    footer: false
+                }
+            };
+
+            try {
+                // 1. Analyser les métadonnées
+                const metadata = await pdf.getMetadata();
+                const info = metadata.info;
+
+                if (info.Creator) {
+                    result.details.creator = info.Creator;
+                }
+                if (info.CreationDate) {
+                    result.details.creationDate = new Date(info.CreationDate).toLocaleString('fr-FR');
+                }
+                if (info.Producer) {
+                    const sessionMatch = info.Producer.match(/Session:([a-zA-Z0-9]+)/);
+                    if (sessionMatch) {
+                        result.details.sessionId = sessionMatch[1];
+                    }
+                }
+
+                // 2. Analyser le contenu textuel des pages
+                let totalMarkers = 0;
+                let hasOfficialFooter = false;
+
+                for (let pageNum = 1; pageNum <= Math.min(pdf.numPages, 5); pageNum++) {
+                    const page = await pdf.getPage(pageNum);
+                    const textContent = await page.getTextContent();
+                    const pageText = textContent.items.map(item => item.str).join(' ');
+
+                    // Rechercher les marqueurs de sécurité
+                    const markers = [
+                        /\d{4}-\d{2}-\d{2}/, // Date format YYYY-MM-DD
+                        /ID:[a-zA-Z0-9]{8}/, // ID session
+                        /P\d+/, // Numéro de page
+                        /V4\.0/ // Version
+                    ];
+
+                    markers.forEach(marker => {
+                        if (marker.test(pageText)) {
+                            totalMarkers++;
+                        }
+                    });
+
+                    // Rechercher le footer officiel
+                    if (pageText.includes('Traité avec Filigrane V1.0') || 
+                        pageText.includes('github.com/Unbanked0/filigrane')) {
+                        hasOfficialFooter = true;
+                    }
+                }
+
+                result.details.markers = totalMarkers;
+                result.details.footer = hasOfficialFooter;
+
+                // 3. Déterminer le statut
+                const isCreatorValid = result.details.creator.includes('Outil de filigrane sécurisé');
+                const hasSession = result.details.sessionId !== 'Non trouvé';
+                const hasEnoughMarkers = totalMarkers >= 2;
+
+                if (isCreatorValid && hasSession && hasEnoughMarkers && hasOfficialFooter) {
+                    result.status = 'authentic';
+                    result.title = 'PDF Authentique';
+                    result.description = 'Ce PDF a été généré par l\'outil Filigrane v1.3 et semble authentique.';
+                } else if (isCreatorValid || hasSession || hasEnoughMarkers) {
+                    result.status = 'suspicious';
+                    result.title = 'PDF Suspect';
+                    result.description = 'Ce PDF présente certains marqueurs de l\'outil Filigrane mais des éléments semblent manquants ou modifiés.';
+                } else {
+                    result.status = 'invalid';
+                    result.title = 'PDF Non Reconnu';
+                    result.description = 'Ce PDF ne semble pas avoir été généré par l\'outil Filigrane v1.3.';
+                }
+
+            } catch (error) {
+                console.error('Erreur analyse métadonnées:', error);
+                result.status = 'error';
+                result.title = 'Erreur d\'analyse';
+                result.description = 'Une erreur est survenue lors de l\'analyse des métadonnées.';
+            }
+
+            return result;
+        }
+
+        function displayResults(result) {
+            const resultCard = document.getElementById('resultCard');
+            const resultIcon = document.getElementById('resultIcon');
+            const resultText = document.getElementById('resultText');
+            const resultDescription = document.getElementById('resultDescription');
+
+            // Nettoyer les classes précédentes
+            resultCard.className = 'result-card';
+            
+            // Appliquer le style selon le statut
+            switch(result.status) {
+                case 'authentic':
+                    resultCard.classList.add('result-authentic');
+                    resultIcon.textContent = '✅';
+                    break;
+                case 'suspicious':
+                    resultCard.classList.add('result-suspicious');
+                    resultIcon.textContent = '⚠️';
+                    break;
+                case 'invalid':
+                case 'error':
+                default:
+                    resultCard.classList.add('result-invalid');
+                    resultIcon.textContent = '❌';
+                    break;
+            }
+
+            resultText.textContent = result.title;
+            resultDescription.textContent = result.description;
+
+            // Remplir les détails
+            document.getElementById('creatorValue').textContent = result.details.creator || '-';
+            document.getElementById('creationDateValue').textContent = result.details.creationDate || '-';
+            document.getElementById('sessionIdValue').textContent = result.details.sessionId || '-';
+            document.getElementById('markersValue').textContent = result.details.markers + '/4';
+            document.getElementById('footerValue').textContent = result.details.footer ? 'Présent' : 'Absent';
+        }
+
+        function resetVerifier() {
+            uploadZone.style.display = 'block';
+            loadingDiv.style.display = 'none';
+            resultSection.style.display = 'none';
+            fileInput.value = '';
+        }
+
+        // Assigner à window pour accessibilité globale
+        window.resetVerifier = resetVerifier;
+    </script>
+</body>
+</html>
