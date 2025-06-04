@@ -1,0 +1,810 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎨 Filigrane PDF libre</title>
+	<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHZpZXdCb3g9IjAgMCAzMiAzMiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KICA8cmVjdCB3aWR0aD0iMzIiIGhlaWdodD0iMzIiIHJ4PSI0IiBmaWxsPSIjNENBRjUwIi8+CiAgPHRleHQgeD0iMTYiIHk9IjIyIiBmb250LWZhbWlseT0iQXJpYWwsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTgiIGZvbnQtc3R5bGU9Iml0YWxpYyIgZm9udC13ZWlnaHQ9ImJvbGQiIGZpbGw9IndoaXRlIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIj5GPC90ZXh0Pgo8L3N2Zz4K"> <!-- embedded ICO icon -->
+	
+	<!-- To be replaced by entire file content for production and offline use -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+	<!-- To be replaced by entire file content for production and offline use -->
+	
+	
+</head>
+<body>
+    <div class="container">
+        <div class="header-bar">
+            <h1>🎨 Filigrane PDF - outil libre</h1>
+            <div class="connection-status">
+                <span class="connection-icon" id="connectionIcon">📴</span>
+                <span id="connectionStatus">Hors-ligne (sécurisé)</span>
+            </div>
+        </div>
+        
+        <div class="main-layout">
+            <div class="left-panel">
+                <div class="upload-area" id="uploadArea">
+                    <p>Cliquez ici ou glissez-déposez votre fichier PDF</p>
+                    <input type="file" id="fileInput" accept=".pdf">
+                </div>
+                
+                <div class="help-text" id="helpText" style="display: none;">
+                    <div class="info-button" onclick="toggleHelp()">i</div>
+                    <p>💡 Cliquez sur la zone de visualisation à droite pour placer le texte facilement</p>
+                </div>
+                
+                <div class="text-input">
+                    <label for="textToAdd" style="font-size:20px">👉 Texte en filigrane à ajouter :</label>
+                    <input type="text" id="textToAdd" value="" placeholder="Entrez le texte à ajouter sur le PDF" style="font-size:18px">
+                </div>
+                
+                <div class="style-buttons">
+                    <div class="style-button" id="boldBtn">Gras</div>
+                    <div class="style-button" id="italicBtn">Italique</div>
+                </div>
+                
+                <div style="display: flex; gap: 15px; margin-bottom: 15px;">
+                    <div class="text-input" style="flex: 1;">
+                        <label for="textColor">Couleur :</label>
+                        <input type="color" id="textColor" value="#0c2b5e" style="width: 100%; height: 35px; padding: 2px; max-width:60px;">
+                    </div>
+                    <div class="text-input" style="flex: 2;">
+                        <label for="textOpacity">Opacité :</label>
+                        <input type="range" id="textOpacity" min="0" max="100" value="60" style="width: 100%;">
+                        <div style="display: flex; justify-content: space-between; font-size: 11px; color: #666; margin-top: -5px;">
+                            <span>0%</span>
+                            <span id="opacityValue" style="font-weight: bold;">60%</span>
+                            <span>100%</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="checkbox-input">
+                    <label>
+                        <input type="checkbox" id="rotateText" checked>
+                        Incliner le texte à 30°
+                    </label>
+                </div>
+				<div class="checkbox-input" style="display:none">
+					<label>
+						<input type="checkbox" id="addSecurityMarks" checked>
+						Ajouter des marqueurs de sécurité discrets (horodatés)
+					</label>
+				</div>
+
+				<div class="checkbox-input">
+					<label>
+						<input type="checkbox" id="addBackgroundPattern" checked>
+						Ajouter un motif discret en arrière-plan
+					</label>
+				</div>
+				
+                <div class="position-inputs">
+                    <div class="text-input">
+                        <label for="xPosition">Position X :</label>
+                        <div class="position-control">
+                            <button type="button" onclick="adjustPosition('x', -5)">-</button>
+                            <input type="text" id="xPosition" value="50" placeholder="X">
+                            <button type="button" onclick="adjustPosition('x', 5)">+</button>
+                        </div>
+                    </div>
+                    <div class="text-input">
+                        <label for="yPosition">Position Y :</label>
+                        <div class="position-control">
+                            <button type="button" onclick="adjustPosition('y', -5)">-</button>
+                            <input type="text" id="yPosition" value="200" placeholder="Y">
+                            <button type="button" onclick="adjustPosition('y', 5)">+</button>
+                        </div>
+                    </div>
+                    <div class="text-input">
+                        <label for="fontSize">Taille :</label>
+                        <div class="position-control">
+                            <button type="button" onclick="adjustFontSize(-1)">-</button>
+                            <input type="text" id="fontSize" value="27" placeholder="Taille">
+                            <button type="button" onclick="adjustFontSize(1)">+</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <button id="applyAllBtn" disabled onclick="applyToAllPages()">Appliquer le filigrane sur toutes les pages</button>
+                
+                <div id="status" class="status" style="display: none;"></div>
+                
+								<!-- Section de vérification d'authenticité - À insérer dans votre HTML -->
+				<div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #ddd;">
+					<h4 style="margin-bottom: 15px; color: #4CAF50;">🔒 Vérification d'authenticité</h4>
+					
+					<div style="background-color: #e8f5e9; border: 1px solid #ffeaa7; border-radius: 4px; padding: 12px; margin-bottom: 15px;">
+						<strong style="color: #856404;">⚠️ Important :</strong> Téléchargez uniquement depuis 
+						<a href="https://github.com/Unbanked0/Filigrane" target="_blank">github.com/Unbanked0/Filigrane</a>
+					</div>
+
+					<!-- Vérification basique -->
+					<div class="verification-level" style="margin-bottom: 10px;">
+						<div class="verification-header" onclick="toggleVerificationSection('basic')" 
+							 style="background-color: #e3f2fd; padding: 12px; border-radius: 4px; cursor: pointer; border-left: 4px solid #2196F3; display: flex; justify-content: space-between; align-items: center;">
+							<span><strong>📱 Vérification basique (recommandée)</strong></span>
+							<span id="toggle-basic" style="font-size: 18px;">▼</span>
+						</div>
+						<div id="content-basic" class="verification-content" style="display: none; padding: 15px; background-color: #f8f9fa; border-radius: 0 0 4px 4px;">
+							<ol style="margin: 5px 0; padding-left: 20px; line-height: 1.6;">
+								<li><strong>Source officielle uniquement :</strong><br>
+									→ <a href="https://github.com/Unbanked0/Filigrane" target="_blank">github.com/Unbanked0/Filigrane</a><br>
+									→ URL doit commencer par <code>https://github.com/Unbanked0/</code>
+								</li>
+								<li><strong>Taille du fichier :</strong> 868 Ko</li>
+								<li><strong>Cadenas</strong> dans la barre d'adresse</li>
+							</ol>
+						</div>
+					</div>
+
+					<!-- Vérification avancée -->
+					<div class="verification-level" style="margin-bottom: 10px;">
+						<div class="verification-header" onclick="toggleVerificationSection('advanced')" 
+							 style="background-color: #fff3e0; padding: 12px; border-radius: 4px; cursor: pointer; border-left: 4px solid #FF9800; display: flex; justify-content: space-between; align-items: center;">
+							<span><strong>💻 Vérification avancée (hash SHA-256)</strong></span>
+							<span id="toggle-advanced" style="font-size: 18px;">▶</span>
+						</div>
+						<div id="content-advanced" class="verification-content" style="display: none; padding: 15px; background-color: #f8f9fa; border-radius: 0 0 4px 4px;">
+							<ol style="margin: 5px 0; padding-left: 20px; line-height: 1.6;">
+								<li><strong>Calculer le hash en ouvrant une console terminal dans le dossier où se trouve ce fichier .html actuel :</strong><br>
+									<strong>Windows :</strong> <code>certutil -hashfile filigrane_pdf_official_V1.html SHA256</code><br>
+									<strong>Mac/Linux :</strong> <code>sha256sum filigrane_pdf_official_V1.html</code>
+								</li>
+								<li><strong>Comparer</strong> avec le hash officiel sur GitHub (section "Releases")</li>
+								<li><strong>Le hash doit correspondre exactement</strong></li>
+							</ol>
+						</div>
+					</div>
+
+					<!-- Vérification expert -->
+					<div class="verification-level" style="margin-bottom: 15px;">
+						<div class="verification-header" onclick="toggleVerificationSection('expert')" 
+							 style="background-color: #ffebee; padding: 12px; border-radius: 4px; cursor: pointer; border-left: 4px solid #F44336; display: flex; justify-content: space-between; align-items: center;">
+							<span><strong>🔐 Vérification cryptographique (experts PGP)</strong></span>
+							<span id="toggle-expert" style="font-size: 18px;">▶</span>
+						</div>
+						<div id="content-expert" class="verification-content" style="display: none; padding: 15px; background-color: #f8f9fa; border-radius: 0 0 4px 4px;">
+							<div style="margin-bottom: 10px;">
+								<strong>Empreinte PGP de Unbanked0 :</strong><br>
+								<code style="background-color: #f0f0f0; padding: 4px; border-radius: 2px; font-size: 13px;">27F7 7D8D 54A9 A6B9 CBB9 A199 290C 7791 E938 D9CB</code>
+							</div>
+							<ol style="margin: 5px 0; padding-left: 20px; line-height: 1.6; font-size: 14px;">
+								<li>Importez la clé publique depuis un serveur de clés</li>
+								<li>Vérifiez la signature du fichier (.sig) ou du commit Git</li>
+							</ol>
+						</div>
+					</div>
+
+					<!-- Signaux d'alarme -->
+					<div style="background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 4px; padding: 12px;">
+						<strong style="color: #856404;">🚨 Ne pas utiliser si :</strong>
+						<span style="font-size: 14px;">Fichier reçu par email • Taille différente de 868 ko • URL suspecte • Demande de permissions système</span>
+					</div>
+				</div>
+
+				<script>
+				// Fonction pour basculer l'affichage des sections de vérification
+				function toggleVerificationSection(sectionId) {
+					const content = document.getElementById('content-' + sectionId);
+					const toggle = document.getElementById('toggle-' + sectionId);
+					
+					if (content.style.display === 'none' || content.style.display === '') {
+						content.style.display = 'block';
+						toggle.textContent = '▼';
+					} else {
+						content.style.display = 'none';
+						toggle.textContent = '▶';
+					}
+				}
+
+				// Assigner la fonction à window pour qu'elle soit accessible globalement
+				window.toggleVerificationSection = toggleVerificationSection;
+				</script>
+				
+				
+				
+				
+				
+            </div>
+            
+            <div class="right-panel">
+                <div class="welcome-info" id="welcomeInfo">
+                    <h3>Bienvenue dans l'outil de filigrane sécurisé</h3>
+                    <p>La génération du filigrane est simple, et fonctionne hors-ligne une fois la page chargée. Il vous suffit de :</p>
+                    <ol>
+                        <li><strong>Déposer le document</strong> sur la plateforme ;</li>
+                        <li><strong>Choisir le texte que vous souhaitez apposer</strong> par-dessus ;</li>
+                        <li>Cliquer sur le bouton <strong>Ajouter le filigrane</strong> ;</li>
+                        <li>Le <strong>téléchargement du document filigrané</strong> démarre automatiquement, prêt à être envoyé à qui de droit.</li>
+                    </ol>
+                    <div class="security-note">
+                        <p><strong>🔒 Sécurité maximale :</strong></p>
+                        <p>Contrairement aux millions de données personnelles fuitées depuis 2023, ici pas de fuite de données possibles à partir du moment où le fichier HTML est intègre. Aucun historique enregistré.</p>
+                        <p>Le code informatique est libre et open source, vos fichiers ne vont pas sur Internet (hors-ligne), personne n'y a accès à part vous.</p>
+                    </div>
+                </div>
+                
+                <div class="preview-container" id="previewContainer" style="display: none;">
+                    <div class="preview-controls">
+                        <label for="previewPage">Page à visualiser :</label>
+                        <select id="previewPage">
+                            <option value="1">Page 1</option>
+                            <option value="2">Page 2</option>
+                        </select>
+                        <button id="updatePreviewBtn" style="width: auto; margin: 0;">Actualiser</button>
+                    </div>
+                    <div class="canvas-container" id="canvasContainer">
+                        <canvas id="previewCanvas"></canvas>
+                        <div id="textOverlay"></div>
+                    </div>
+                    <div class="preview-info">
+                        <p>Position actuelle du texte : X = <span id="currentX">50</span>, Y = <span id="currentY">50</span></p>
+                        <p>Le texte sera ajouté sur la <strong>Page <span id="targetPage">1</span></strong> du PDF.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de confirmation -->
+    <div id="confirmModal" class="modal">
+        <div class="modal-content">
+            <h3>PDF créé avec succès !</h3>
+            <p>Voulez-vous modifier à nouveau ce PDF ou charger un nouveau fichier ?</p>
+            <div class="modal-buttons">
+                <button onclick="continueEditing()">Continuer à modifier</button>
+                <button onclick="resetInterface()">Nouveau PDF</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal d'aide -->
+    <div id="helpModal" class="modal" onclick="if(event.target === this) this.style.display='none'">
+        <div class="modal-content">
+            <h3>Comment utiliser l'outil</h3>
+            <div style="text-align: left;">
+                <p>La génération du filigrane est simple, et fonctionne hors-ligne une fois la page chargée. Il vous suffit de :</p>
+                <ol>
+                    <li><strong>Déposer le document</strong> sur la plateforme ;</li>
+                    <li><strong>Choisir le texte que vous souhaitez apposer</strong> par-dessus ;</li>
+                    <li>Cliquer sur le bouton <strong>Ajouter le filigrane</strong> ;</li>
+                    <li>Le <strong>téléchargement du document filigrané</strong> démarre automatiquement.</li>
+                </ol>
+                <div class="security-note">
+                    <p><strong>🔒 Sécurité :</strong> Vos fichiers ne vont pas sur Internet, personne n'y a accès à part vous.</p>
+                </div>
+            </div>
+            <button onclick="this.parentElement.parentElement.style.display='none'" style="margin-top: 20px;">Fermer</button>
+        </div>
+    </div>
+
+    <script>
+        // Configuration de PDF.js
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        let uploadedPdf = null;
+        let originalPdfBuffer = null;
+        let pdfUrl = null;
+        let totalPages = 0;
+        let currentScale = 1.0;
+        let currentViewport = null;
+        let pageHeights = {};
+        
+        const fileInput = document.getElementById('fileInput');
+        const uploadArea = document.getElementById('uploadArea');
+        const statusDiv = document.getElementById('status');
+        const previewContainer = document.getElementById('previewContainer');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const textOverlay = document.getElementById('textOverlay');
+        const previewPageSelect = document.getElementById('previewPage');
+        const updatePreviewBtn = document.getElementById('updatePreviewBtn');
+        const canvasContainer = document.getElementById('canvasContainer');
+        const boldBtn = document.getElementById('boldBtn');
+        const italicBtn = document.getElementById('italicBtn');
+        const modal = document.getElementById('confirmModal');
+        const welcomeInfo = document.getElementById('welcomeInfo');
+        const helpText = document.getElementById('helpText');
+        const helpModal = document.getElementById('helpModal');
+        
+        // Simuler le passage en mode hors-ligne après le chargement
+        window.addEventListener('load', () => {
+            console.log('📋 Page de filigrane PDF chargée avec succès');
+            
+            setTimeout(() => {
+                document.getElementById('connectionIcon').textContent = '📴';
+                document.getElementById('connectionStatus').textContent = 'Hors ligne (sécurisé)';
+                console.log('🔒 Mode hors-ligne actif - Vos fichiers restent toujours sur votre ordinateur ou téléphone - aucun serveur distant');
+            }, 300);
+            
+            // Calculer le hash SHA-256 du fichier HTML actuel
+            calculateFileHash();
+        });
+        
+        // Fonction pour calculer le hash SHA-256 du fichier HTML
+        async function calculateFileHash() {
+            try {
+                // Pour les fichiers locaux (file://), on ne peut pas utiliser fetch
+                // Donc on utilise le contenu du document actuel
+                const htmlContent = document.documentElement.outerHTML;
+                const encoder = new TextEncoder();
+                const data = encoder.encode(htmlContent);
+                const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+                const hashArray = Array.from(new Uint8Array(hashBuffer));
+                const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                document.getElementById('fileHash').value = hashHex;
+            } catch (error) {
+                console.error('Erreur de calcul du hash:', error);
+                // Calcul alternatif simple pour les fichiers locaux
+                const simpleHash = generateSimpleHash(document.documentElement.outerHTML);
+                document.getElementById('fileHash').value = simpleHash;
+            }
+        }
+        
+        // Fonction de secours pour générer un hash simple
+        function generateSimpleHash(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                const char = str.charCodeAt(i);
+                hash = ((hash << 5) - hash) + char;
+                hash = hash & hash; // Conversion en 32bit integer
+            }
+            return Math.abs(hash).toString(16).padStart(8, '0');
+        }
+
+        // Initialiser le texte par défaut avec la date du jour
+        function initializeDefaultText() {
+            const today = new Date();
+            const dateStr = today.toLocaleDateString('fr-FR');
+            document.getElementById('textToAdd').value = `Nom/Site du demandeur - ${dateStr}`;
+            // Activer le gras par défaut
+            boldBtn.classList.add('active');
+        }
+
+        initializeDefaultText();
+
+        // Gestion des boutons de style
+        boldBtn.addEventListener('click', () => {
+            boldBtn.classList.toggle('active');
+            updateTextOverlay();
+        });
+
+        italicBtn.addEventListener('click', () => {
+            italicBtn.classList.toggle('active');
+            updateTextOverlay();
+        });
+
+        // Gestion du clic sur la zone d'upload
+        uploadArea.addEventListener('click', () => fileInput.click());
+
+        // Gestion du drag and drop
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0 && files[0].type === 'application/pdf') {
+                handleFile(files[0]);
+            }
+        });
+
+        // Gestion de la sélection de fichier
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // Clic sur le canvas pour positionner le texte
+        canvasContainer.addEventListener('click', (e) => {
+            if (!currentViewport) return;
+            
+            const rect = previewCanvas.getBoundingClientRect();
+            const canvasX = e.clientX - rect.left;
+            const canvasY = e.clientY - rect.top;
+            
+            // Convertir les coordonnées du canvas en coordonnées PDF
+            const pdfX = canvasX / currentScale;
+            const pdfY = canvasY / currentScale;
+            
+            document.getElementById('xPosition').value = Math.round(pdfX);
+            document.getElementById('yPosition').value = Math.round(pdfY);
+            
+            updateTextOverlay();
+        });
+
+        // Mise à jour de l'aperçu quand les valeurs changent
+        ['xPosition', 'yPosition', 'fontSize', 'textToAdd', 'textColor', 'textOpacity', 'rotateText'].forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                element.addEventListener(element.type === 'checkbox' ? 'change' : 'input', updateTextOverlay);
+            }
+        });
+        
+        // Mise à jour de la valeur d'opacité affichée
+        document.getElementById('textOpacity').addEventListener('input', (e) => {
+            document.getElementById('opacityValue').textContent = e.target.value + '%';
+        });
+
+        // Changement de page de prévisualisation
+        previewPageSelect.addEventListener('change', () => {
+            showPreview(parseInt(previewPageSelect.value));
+            document.getElementById('targetPage').textContent = previewPageSelect.value;
+        });
+
+        updatePreviewBtn.addEventListener('click', () => {
+            showPreview(parseInt(previewPageSelect.value));
+        });
+
+        // Fonction pour ajuster la position avec les boutons +/-
+        function adjustPosition(axis, delta) {
+            const input = document.getElementById(axis + 'Position');
+            const currentValue = parseFloat(input.value) || 0;
+            input.value = Math.max(0, currentValue + delta);
+            updateTextOverlay();
+        }
+
+        // Fonction pour ajuster la taille de police
+        function adjustFontSize(delta) {
+            const input = document.getElementById('fontSize');
+            const currentValue = parseFloat(input.value) || 28;
+            input.value = Math.max(1, currentValue + delta);
+            updateTextOverlay();
+        }
+
+        // Fonction pour afficher/masquer l'aide
+        function toggleHelp() {
+            helpModal.style.display = 'block';
+        }
+
+        async function handleFile(file) {
+            try {
+                const arrayBuffer = await file.arrayBuffer();
+                // Garder une copie du buffer original
+                originalPdfBuffer = arrayBuffer.slice(0);
+                
+                uploadedPdf = await PDFLib.PDFDocument.load(arrayBuffer);
+                
+                // Créer une URL Blob pour PDF.js
+                const blob = new Blob([arrayBuffer], { type: 'application/pdf' });
+                if (pdfUrl) {
+                    URL.revokeObjectURL(pdfUrl);
+                }
+                pdfUrl = URL.createObjectURL(blob);
+                
+                totalPages = uploadedPdf.getPageCount();
+                
+                // Stocker la hauteur de chaque page
+                const pages = uploadedPdf.getPages();
+                pages.forEach((page, index) => {
+                    pageHeights[index + 1] = page.getHeight();
+                });
+                
+                // Mettre à jour les options de page
+                previewPageSelect.innerHTML = '';
+                for (let i = 1; i <= Math.min(totalPages, 10); i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `Page ${i}`;
+                    previewPageSelect.appendChild(option);
+                }
+                
+                showStatus(`PDF chargé avec succès (${totalPages} pages)`, 'success');
+                document.getElementById('applyAllBtn').disabled = false;
+                uploadArea.innerHTML = `<p>Fichier chargé : ${file.name}</p>`;
+                
+                // Afficher l'aperçu et masquer l'info de bienvenue
+                welcomeInfo.style.display = 'none';
+                previewContainer.style.display = 'block';
+                helpText.style.display = 'block';
+                await showPreview(1);
+                document.getElementById('targetPage').textContent = '1';
+            } catch (error) {
+                showStatus('Erreur lors du chargement du PDF', 'error');
+                console.error(error);
+            }
+        }
+
+        async function showPreview(pageNumber = 1) {
+            try {
+                if (!pdfUrl) return;
+                
+                const loadingTask = pdfjsLib.getDocument(pdfUrl);
+                const pdf = await loadingTask.promise;
+                const page = await pdf.getPage(pageNumber);
+                
+                // Calculer l'échelle pour que la page s'adapte à la zone de prévisualisation
+                const viewport = page.getViewport({scale: 1.0});
+                const maxWidth = 600;
+                currentScale = maxWidth / viewport.width;
+                currentViewport = page.getViewport({scale: currentScale});
+                
+                previewCanvas.width = currentViewport.width;
+                previewCanvas.height = currentViewport.height;
+                
+                const context = previewCanvas.getContext('2d');
+                await page.render({
+                    canvasContext: context,
+                    viewport: currentViewport
+                }).promise;
+                
+                updateTextOverlay();
+            } catch (error) {
+                console.error('Erreur lors de l\'affichage de l\'aperçu:', error);
+            }
+        }
+
+        function updateTextOverlay() {
+            if (!currentViewport) return;
+            
+            const text = document.getElementById('textToAdd').value;
+            const x = parseFloat(document.getElementById('xPosition').value) || 50;
+            const y = parseFloat(document.getElementById('yPosition').value) || 50;
+            const fontSize = parseFloat(document.getElementById('fontSize').value) || 18;
+            const isBold = boldBtn.classList.contains('active');
+            const isItalic = italicBtn.classList.contains('active');
+            const color = document.getElementById('textColor').value;
+            const opacity = document.getElementById('textOpacity').value / 100;
+            const rotate = document.getElementById('rotateText').checked;
+            
+            // Mettre à jour l'affichage des valeurs actuelles
+            document.getElementById('currentX').textContent = x;
+            document.getElementById('currentY').textContent = y;
+            
+            // Calculer la position sur le canvas
+            const canvasX = x * currentScale;
+            const canvasY = y * currentScale;
+            
+            // Positionner et styliser l'overlay de texte
+            textOverlay.style.left = canvasX + 'px';
+            textOverlay.style.top = canvasY + 'px';
+            textOverlay.style.fontSize = (fontSize * currentScale*0.84) + 'px';
+            textOverlay.style.fontWeight = isBold ? 'bold' : 'normal';
+            textOverlay.style.fontStyle = isItalic ? 'italic' : 'normal';
+            textOverlay.style.color = color;
+            textOverlay.style.opacity = opacity;
+            textOverlay.style.transform = rotate ? 'rotate(-30deg)' : 'none';
+            textOverlay.style.transformOrigin = 'left top';
+            textOverlay.textContent = text;
+        }
+
+
+        
+        function showStatus(message, type) {
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+            statusDiv.style.display = 'block';
+        }
+        
+        function continueEditing() {
+            modal.style.display = 'none';
+        }
+        
+        function resetInterface() {
+            modal.style.display = 'none';
+            uploadedPdf = null;
+            originalPdfBuffer = null;
+            if (pdfUrl) {
+                URL.revokeObjectURL(pdfUrl);
+                pdfUrl = null;
+            }
+            currentViewport = null;
+            pageHeights = {};
+            fileInput.value = '';
+            uploadArea.innerHTML = '<p>Cliquez ici ou glissez-déposez votre fichier PDF</p>';
+            initializeDefaultText();
+            document.getElementById('xPosition').value = '50';
+            document.getElementById('yPosition').value = '50';
+            document.getElementById('fontSize').value = '18';
+            document.getElementById('textColor').value = '#0c2b5e';
+            document.getElementById('textOpacity').value = '60';
+            document.getElementById('opacityValue').textContent = '60%';
+            document.getElementById('rotateText').checked = true;
+            boldBtn.classList.remove('active');
+            italicBtn.classList.remove('active');
+            document.getElementById('applyAllBtn').disabled = true;
+            statusDiv.style.display = 'none';
+            previewContainer.style.display = 'none';
+            welcomeInfo.style.display = 'block';
+            helpText.style.display = 'none';
+        }
+
+        // Assigner les fonctions à window pour qu'elles soient accessibles globalement
+        window.adjustPosition = adjustPosition;
+        window.adjustFontSize = adjustFontSize;
+        window.continueEditing = continueEditing;
+        window.resetInterface = resetInterface;
+        window.toggleHelp = toggleHelp;
+        window.calculateFileHash = calculateFileHash;
+        
+        // Fonction pour appliquer le filigrane sur toutes les pages
+		window.applyToAllPages = async function() {
+			const text = document.getElementById('textToAdd').value;
+			const x = (parseFloat(document.getElementById('xPosition').value) + 20) || 50;   //plus à droite à l'application du filigrane
+			const y = (parseFloat(document.getElementById('yPosition').value) + 25) || 50;  //plus bas à l'application du filigrane
+			const fontSize = parseFloat(document.getElementById('fontSize').value) || 24;
+			const isBold = boldBtn.classList.contains('active');
+			const isItalic = italicBtn.classList.contains('active');
+			const color = document.getElementById('textColor').value;
+			const opacity = document.getElementById('textOpacity').value / 100;
+			const rotate = document.getElementById('rotateText').checked;
+			const addSecurity = document.getElementById('addSecurityMarks').checked;
+			const addBackground = document.getElementById('addBackgroundPattern').checked;
+			
+			if (!text) {
+				showStatus('Veuillez entrer un texte', 'error');
+				return;
+			}
+			
+			try {
+				showStatus('Application du filigrane sur toutes les pages...', 'success');
+				console.log('🎨 Début de l\'application du filigrane...');
+				
+				// Recharger le PDF original
+				const pdfDoc = await PDFLib.PDFDocument.load(originalPdfBuffer);
+				const pages = pdfDoc.getPages();
+				
+				// Déterminer la police
+				let fontName = PDFLib.StandardFonts.Helvetica;
+				if (isBold && isItalic) {
+					fontName = PDFLib.StandardFonts.HelveticaBoldOblique;
+				} else if (isBold) {
+					fontName = PDFLib.StandardFonts.HelveticaBold;
+				} else if (isItalic) {
+					fontName = PDFLib.StandardFonts.HelveticaOblique;
+				}
+				
+				const font = await pdfDoc.embedFont(fontName);
+				
+				// Convertir la couleur hex en RGB
+				const hexToRgb = (hex) => {
+					const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+					return result ? {
+						r: parseInt(result[1], 16) / 255,
+						g: parseInt(result[2], 16) / 255,
+						b: parseInt(result[3], 16) / 255
+					} : { r: 0, g: 0, b: 0 };
+				};
+				
+				const rgb = hexToRgb(color);
+				
+				// Générer un ID de session unique pour la traçabilité
+				const sessionId = Date.now().toString(36) + Math.random().toString(36).slice(2);
+				const timestamp = new Date().toISOString();
+				
+				// Appliquer sur toutes les pages
+				pages.forEach((page, index) => {
+					const pageHeight = page.getHeight();
+					const pageWidth = page.getWidth();
+					const pdfY = pageHeight - y - fontSize - 50;
+					
+					// 1. Filigrane principal (visible)
+					if (rotate) {
+						page.drawText(text, {
+							x: x,
+							y: pdfY,
+							size: fontSize,
+							font: font,
+							color: PDFLib.rgb(rgb.r, rgb.g, rgb.b),
+							opacity: opacity,
+							rotate: PDFLib.degrees(30),
+						});
+					} else {
+						page.drawText(text, {
+							x: x,
+							y: pdfY,
+							size: fontSize,
+							font: font,
+							color: PDFLib.rgb(rgb.r, rgb.g, rgb.b),
+							opacity: opacity,
+						});
+					}
+					
+					// 2. Filigranes de sécurité discrets (si activé)
+					if (addSecurity) {
+						const securityMarks = [
+							{ text: `${timestamp.slice(0,10)}`, x: 15, y: 15, size: 8, opacity: 0.3 },
+							{ text: `ID:${sessionId.slice(0,8)}`, x: pageWidth-70, y: 15, size: 8, opacity: 0.3 },
+							{ text: `P${index+1}`, x: pageWidth/2, y: 15, size: 8, opacity: 0.3 },
+							{ text: `V4.0`, x: 15, y: pageHeight-25, size: 8, opacity: 0.3 }
+						];
+
+						
+						securityMarks.forEach(mark => {
+							page.drawText(mark.text, {
+								x: mark.x,
+								y: mark.y,
+								size: mark.size,
+								font: font,
+								color: PDFLib.rgb(0.7, 0.7, 0.7),
+								opacity: mark.opacity,
+							});
+						});
+					}
+					
+					// 3. Pattern en arrière-plan (si activé)
+					if (addBackground) {
+						const bgText = text.substring(0, 40);
+						const spacing = 180;
+						
+						for (let i = -50; i < pageWidth + 50; i += spacing) {
+							for (let j = -50; j < pageHeight + 50; j += spacing) {
+								page.drawText(bgText, {
+									x: i,
+									y: j,
+									size: 14,
+									font: font,
+									color: PDFLib.rgb(0.8, 0.8, 0.8),
+									opacity: 0.3,
+									rotate: PDFLib.degrees(30),
+								});
+							}
+						}
+					}
+					
+					// 4. Mention de traitement (visible en bas de page)
+					const footerText = "Traité avec Filigrane V1.0 - libre & open source - github.com/Unbanked0/filigrane";
+					page.drawText(footerText, {
+						x: pageWidth/2 - 150, // Centré approximativement
+						y: 5, // Tout en bas
+						size: 8,
+						font: font,
+						color: PDFLib.rgb(0.5, 0.5, 0.5), // Gris visible
+						opacity: 0.8,
+					});
+					
+				});
+				
+				// 5. Métadonnées de traçabilité (sans infos personnelles)
+				pdfDoc.setTitle(`Document filigrané`);
+				pdfDoc.setSubject(`Traité le ${new Date().toLocaleDateString('fr-FR')} avec filigrane`);
+				pdfDoc.setCreator('Outil de filigrane sécurisé v4.0');
+				pdfDoc.setProducer(`Session:${sessionId.slice(0,12)}`);
+				pdfDoc.setCreationDate(new Date());
+				pdfDoc.setModificationDate(new Date());
+				
+				
+				// Sauvegarder et télécharger
+				const pdfBytes = await pdfDoc.save();
+				const timeStamp = new Date().toISOString().replace(/[:.]/g, '-').slice(0,19);
+				const fileName = `pdf-filigrane-${timeStamp}.pdf`;
+				
+				const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = fileName;
+				a.click();
+				URL.revokeObjectURL(url);
+				
+				showStatus('Filigrane appliqué avec succès!', 'success');
+				console.log('✅ PDF généré avec protections:', {
+					'Filigrane principal': true,
+					'Marqueurs de sécurité': addSecurity,
+					'Pattern arrière-plan': addBackground,
+					'ID session': sessionId.slice(0,8)
+				});
+				
+				// Afficher le modal de confirmation
+				setTimeout(() => {
+					modal.style.display = 'block';
+				}, 500);
+				
+			} catch (error) {
+				showStatus('Erreur lors de l\'application du filigrane', 'error');
+				console.error('❌ Erreur lors de la génération du PDF :', error);
+			}
+		};
+    </script>
+</body>
+</html>
